@@ -25,6 +25,8 @@ session, add this folder to `PATH`.
 From `cmd.exe`:
 
 ```cmd
+#change the .. to your folder dir route
+cd /d "..\PPL-mini-lang-proj"
 set "PATH=%CD%;%PATH%"
 ```
 
@@ -37,7 +39,7 @@ $env:Path = "$PWD;$env:Path"
 After that, run Mini as:
 
 ```cmd
-mini examples\hello.mini
+mini demo\hello.mini
 ```
 
 ## Run From Cmd
