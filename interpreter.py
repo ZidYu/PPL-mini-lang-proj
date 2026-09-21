@@ -74,7 +74,10 @@ class Interpreter:
         if isinstance(node, VarAssignNode):
             value = self.visit(node.value, environment)
 
-            environment.set(node.name, value)
+            if node.declare:
+                environment.set(node.name, value)
+            else:
+                environment.assign(node.name, value)
 
             return value
 

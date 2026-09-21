@@ -26,6 +26,7 @@ class VarAccessNode:
 class VarAssignNode:
     name: str
     value: object
+    declare: bool = False
 
 
 @dataclass
@@ -129,8 +130,11 @@ class Parser:
         return self.expression()
 
     def assignment(self):
+        declare = False
+
         if self.current_token.type == TokenType.KEYWORD:
             if self.current_token.value == "let":
+                declare = True
                 self.advance()
 
         if self.current_token.type != TokenType.IDENTIFIER:
@@ -146,7 +150,7 @@ class Parser:
 
         value = self.expression()
 
-        return VarAssignNode(name, value)
+        return VarAssignNode(name, value, declare)
 
     def print_statement(self):
         self.advance()

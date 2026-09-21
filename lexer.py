@@ -56,9 +56,9 @@ KEYWORDS = [
 
 class Lexer:
     def __init__(self, text):
-        self.text = text
+        self.text = text.replace("\r\n", "\n").replace("\r", "\n")
         self.pos = 0
-        self.current_char = text[0] if text else None
+        self.current_char = self.text[0] if self.text else None
 
     def advance(self):
         self.pos += 1
