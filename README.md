@@ -55,12 +55,35 @@ python -m src.main sample_program.txt
 
 The language uses dynamic runtime typing. Conditions must evaluate to Boolean values. Numeric division returns a decimal result.
 
-## Five PPL concepts
-1. Formal grammar and syntax: documented in `GRAMMAR.md` and used by the parser.
-2. Lexical scoping and environments: nested `Environment` objects resolve variables through parent scopes.
-3. Type systems and semantics: runtime checks reject incompatible operations.
-4. Control flow: conditional branching and while iteration are supported.
-5. First-class functions: function values can be assigned and called; functions retain their defining environment.
+## PPL concepts demonstrated
+
+Run the complete demonstration with:
+
+```bash
+python -m src.main concepts_demo.txt
+```
+
+Expected output:
+
+```text
+factorial
+120
+12
+```
+
+The demonstration identifies and shows more than the required five concepts:
+
+1. **Syntax and semantics**: `concepts_demo.txt` uses the grammar in `GRAMMAR.md`; the parser builds AST nodes and the interpreter gives them meaning.
+2. **Variables and data types**: `number` is numeric, `enabled` is Boolean, and `message` is a string; `let` binds each value.
+3. **Expressions and operators**: `n == 0`, `n - 1`, `n * factorial(...)`, and `enabled and number > 3` exercise comparison, arithmetic, and logical operators.
+4. **Control structures**: `if`/`else` selects a branch, while the recursive function controls repeated computation.
+5. **Functions/procedures**: `factorial` and `addOffset` accept parameters, return values, and are called as expressions.
+6. **Recursion**: `factorial` calls itself until the base case `n == 0`.
+7. **Scope and binding**: `addOffset` resolves `offset` from its defining environment through a lexical closure.
+8. **Abstraction**: callers use `factorial` and `addOffset` without needing to know their implementation details.
+9. **Modularity**: the lexer, parser, AST, environment, and interpreter are separate modules under `src/`.
+
+The implementation also includes runtime exception handling for invalid syntax, undefined variables, type mismatches, invalid conditions, division by zero, and invalid function calls. These are reported as interpreter errors; the language does not currently provide a user-facing `try`/`catch` construct.
 
 ## Limitations to disclose
 This is an educational interpreter, not a production language. It has no optimizer, machine-code compiler, standard library, or industrial-scale test suite. The grammar and tests should be reviewed by the group against the professor's final rubric before submission.

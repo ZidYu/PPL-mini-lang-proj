@@ -1,0 +1,26 @@
+# Demonstrates the PPL concepts listed in README.md.
+let number = 5;
+let enabled = true;
+let message = "factorial";
+
+function factorial(n):
+    if n == 0:
+        return 1;
+    else:
+        return n * factorial(n - 1);
+    end
+end
+
+# The function uses the variable from its defining (outer) environment.
+let offset = 10;
+function addOffset(value):
+    return offset + value;
+end
+
+if enabled and number > 3:
+    print(message);
+    print(factorial(number));
+    print(addOffset(2));
+else:
+    print("disabled");
+end

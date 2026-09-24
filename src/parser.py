@@ -25,7 +25,7 @@ class Parser:
         e=self.expression(); self.optional_endline(); return PrintStatement(e)
     def if_stmt(self):
         self.match('LPAREN'); c=self.expression(); self.match('RPAREN'); self.match('COLON'); then=self.block_until('ELSE','END','RBRACE'); other=None
-        if self.match('ELSE'): self.match('COLON'); other=Block(self.block_until('END','RBRACE'))
+        if self.match('ELSE'): self.match('COLON'); other=self.block_until('END','RBRACE')
         self.match('END'); self.match('RBRACE'); return IfStatement(c,then,other)
     def while_stmt(self):
         self.match('LPAREN'); c=self.expression(); self.match('RPAREN'); self.match('COLON'); body=self.block_until('END','RBRACE'); self.match('END'); self.match('RBRACE'); return WhileStatement(c,body)
