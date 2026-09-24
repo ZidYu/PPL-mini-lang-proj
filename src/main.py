@@ -1,8 +1,8 @@
 import sys
-from .lexer import Lexer, LexerError
-from .parser import Parser, ParserError
-from .interpreter import Interpreter
-from .environment import RuntimeErrorPPL
+from .core.lexer import Lexer, LexerError
+from .core.parser import Parser, ParserError
+from .core.interpreter import Interpreter
+from .core.environment import RuntimeErrorPPL
 
 def execute_source(source):
     tokens=Lexer(source).scan(); tree=Parser(tokens).parse(); return Interpreter().run(tree)

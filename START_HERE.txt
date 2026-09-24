@@ -5,7 +5,7 @@ MAIN BACKEND:
 - Open http://localhost:8000 in a browser.
 
 CLI:
-- python -m src.main sample_program.txt
+- python -m src.main examples/sample_program.txt
 
 TESTS:
 - python -m unittest discover -s tests -v

@@ -10,7 +10,7 @@ Course: CSS125P - AM5
 
 ## Architecture
 1. Lexer / Scanner: converts source code into tokens and reports illegal characters.
-2. Recursive-descent Parser: converts tokens into AST nodes according to `GRAMMAR.md`.
+2. Recursive-descent Parser: converts tokens into AST nodes according to `docs/GRAMMAR.md`.
 3. Interpreter / Evaluator: executes the AST with lexical environments, runtime type checks, control flow, and functions.
 
 ## Supported features
@@ -50,7 +50,7 @@ From the project directory:
 
 ```bash
 python -m unittest discover -s tests -v
-python -m src.main sample_program.txt
+python -m src.main examples/sample_program.txt
 ```
 
 The language uses dynamic runtime typing. Conditions must evaluate to Boolean values. Numeric division returns a decimal result.
@@ -60,7 +60,7 @@ The language uses dynamic runtime typing. Conditions must evaluate to Boolean va
 Run the complete demonstration with:
 
 ```bash
-python -m src.main concepts_demo.txt
+python -m src.main examples/concepts_demo.txt
 ```
 
 Expected output:
@@ -73,7 +73,7 @@ factorial
 
 The demonstration identifies and shows more than the required five concepts:
 
-1. **Syntax and semantics**: `concepts_demo.txt` uses the grammar in `GRAMMAR.md`; the parser builds AST nodes and the interpreter gives them meaning.
+1. **Syntax and semantics**: `examples/concepts_demo.txt` uses the grammar in `docs/GRAMMAR.md`; the parser builds AST nodes and the interpreter gives them meaning.
 2. **Variables and data types**: `number` is numeric, `enabled` is Boolean, and `message` is a string; `let` binds each value.
 3. **Expressions and operators**: `n == 0`, `n - 1`, `n * factorial(...)`, and `enabled and number > 3` exercise comparison, arithmetic, and logical operators.
 4. **Control structures**: `if`/`else` selects a branch, while the recursive function controls repeated computation.

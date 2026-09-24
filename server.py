@@ -6,7 +6,7 @@ SRC = ROOT / 'src'
 sys.path.insert(0, str(ROOT))
 from src.main import execute_source
 class Handler(SimpleHTTPRequestHandler):
-    def __init__(self,*args,**kwargs): super().__init__(*args,directory=str(ROOT/'web'),**kwargs)
+    def __init__(self,*args,**kwargs): super().__init__(*args,directory=str(ROOT/'server'/'web'),**kwargs)
     def do_POST(self):
         if self.path != '/api/run': self.send_error(404); return
         try:

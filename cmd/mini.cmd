@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set "MINI_DIR=%~dp0"
+set "MINI_DIR=%~dp0..\"
 
 if exist "%MINI_DIR%dist\mini.exe" (
     "%MINI_DIR%dist\mini.exe" %*

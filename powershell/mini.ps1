@@ -3,7 +3,7 @@ param(
     [string[]] $MiniArgs
 )
 
-$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $OneFileExe = Join-Path $Root "dist\mini.exe"
 $OneDirExe = Join-Path $Root "dist\mini\mini.exe"
 
