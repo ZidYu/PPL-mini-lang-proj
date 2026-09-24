@@ -1,176 +1,47 @@
-# Mini Language Interpreter
+# Group 10 - Mini Programming Language and Interpreter
 
-Mini is a small interpreter project with variables, numbers, strings, booleans,
-conditionals, loops, functions, returns, and `print`.
+Course: CSS125P - AM5
 
-## Requirements
+## Members
+- Sanchez, Jasmin Ariane C.
+- Sosa, Leon Gabriel
+- Yu, Zidane Elric
+- Espina, Felicity Ann
 
-- Windows 10 or newer
-- Python 3.10 or newer
+## Architecture
+1. Lexer / Scanner: converts source code into tokens and reports illegal characters.
+2. Recursive-descent Parser: converts tokens into AST nodes according to `GRAMMAR.md`.
+3. Interpreter / Evaluator: executes the AST with lexical environments, runtime type checks, control flow, and functions.
 
-Check Python from `cmd.exe` or PowerShell:
+## Supported features
+- Variables: `let x = 5`
+- Assignment: `x = x + 1`
+- Numbers, strings, booleans
+- Arithmetic and comparisons
+- Logical operators: `and`, `or`, `!`
+- `if` / `else` / `end`
+- `while` / `end`
+- Functions, parameters, calls, and return
+- Function values and lexical closures
+- Comments beginning with `#` or `//`
+- Runtime errors for illegal characters, invalid syntax, undefined variables, type mismatches, invalid conditions, division by zero, and invalid calls
 
-```powershell
-python --version
+## Run
+From the project directory:
+
+```bash
+python -m unittest discover -s tests -v
+python -m src.main sample_program.txt
 ```
 
-## Setup
+The language uses dynamic runtime typing. Conditions must evaluate to Boolean values. Numeric division returns a decimal result.
 
-Download or clone this project, then open a terminal in the project folder.
+## Five PPL concepts
+1. Formal grammar and syntax: documented in `GRAMMAR.md` and used by the parser.
+2. Lexical scoping and environments: nested `Environment` objects resolve variables through parent scopes.
+3. Type systems and semantics: runtime checks reject incompatible operations.
+4. Control flow: conditional branching and while iteration are supported.
+5. First-class functions: function values can be assigned and called; functions retain their defining environment.
 
-You can run Mini directly from the project folder with `mini.cmd` or
-`.\mini.ps1`. To make the command available anywhere for the current terminal
-session, add this folder to `PATH`.
-
-From `cmd.exe`:
-
-```cmd
-#change the .. to your folder dir route
-cd /d "..\PPL-mini-lang-proj"
-set "PATH=%CD%;%PATH%"
-```
-
-From PowerShell:
-
-```powershell
-$env:Path = "$PWD;$env:Path"
-```
-
-After that, run Mini as:
-
-```cmd
-mini demo\hello.mini
-```
-
-## Run From Cmd
-
-Open `cmd.exe` in this project folder.
-
-Start the interactive interpreter:
-
-```cmd
-mini.cmd
-```
-
-Run a file:
-
-```cmd
-mini.cmd examples\hello.mini
-```
-
-Run code directly:
-
-```cmd
-mini.cmd -c "print(1 + 2)"
-```
-
-Open Mini in its own new Command Prompt window:
-
-```cmd
-mini-shell.cmd
-```
-
-## Run From PowerShell
-
-Open PowerShell in this project folder.
-
-Start the interactive interpreter:
-
-```powershell
-.\mini.ps1
-```
-
-Run a file:
-
-```powershell
-.\mini.ps1 .\examples\hello.mini
-```
-
-Run code directly:
-
-```powershell
-.\mini.ps1 -c "print(1 + 2)"
-```
-
-Open Mini in its own new Command Prompt window:
-
-```powershell
-.\mini-shell.ps1
-```
-
-If PowerShell blocks local scripts, run this once for the current terminal:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-## Compile For Windows
-
-The interpreter can be packaged into a Windows executable with PyInstaller. The
-build script installs PyInstaller if it is missing, so the first build needs an
-internet connection.
-
-From PowerShell:
-
-```powershell
-.\build_windows.ps1
-```
-
-From `cmd.exe`:
-
-```cmd
-build_windows.cmd
-```
-
-The default build creates:
-
-```text
-dist\mini\mini.exe
-```
-
-For a single executable file:
-
-```powershell
-.\build_windows.ps1 -OneFile
-```
-
-That creates:
-
-```text
-dist\mini.exe
-```
-
-After compiling, the launchers automatically use the compiled executable when it
-exists:
-
-```cmd
-mini.cmd examples\hello.mini
-```
-
-## Language Example
-
-```text
-let x = 5
-let name = "Jasmin"
-
-print("Hello " + name)
-
-while x < 8:
-    print(x)
-    x = x + 1
-end
-
-function add(a, b):
-    return a + b
-end
-
-print(add(5, 3))
-```
-
-## Notes
-
-- Use `let name = value` to create a variable.
-- Use `name = value` to update an existing variable.
-- Blocks use `:` and close with `end`.
-- Comments start with `#`.
-
+## Limitations to disclose
+This is an educational interpreter, not a production language. It has no optimizer, machine-code compiler, standard library, or industrial-scale test suite. The grammar and tests should be reviewed by the group against the professor's final rubric before submission.

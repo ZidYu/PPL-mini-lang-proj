@@ -1,0 +1,10 @@
+let x = 10;
+
+function showValue():
+    let y = 20;
+    print(x);
+    print(y);
+end
+
+showValue();
+print(x);

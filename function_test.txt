@@ -1,0 +1,6 @@
+function add(a, b):
+    return a + b;
+end
+
+let result = add(10, 5);
+print(result);

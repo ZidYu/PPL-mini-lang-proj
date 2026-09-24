@@ -1,0 +1,15 @@
+GROUP 10 MINI PROGRAMMING LANGUAGE AND INTERPRETER
+
+MAIN BACKEND:
+- Run run.bat on Windows, or execute: python server.py
+- Open http://localhost:8000 in a browser.
+
+CLI:
+- python -m src.main sample_program.txt
+
+TESTS:
+- python -m unittest discover -s tests -v
+
+IMPORTANT:
+- Test the UI/API connection locally before the presentation.
+- The colab folder contains the earlier single-file demonstration version.
