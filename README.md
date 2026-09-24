@@ -26,6 +26,25 @@ Course: CSS125P - AM5
 - Comments beginning with `#` or `//`
 - Runtime errors for illegal characters, invalid syntax, undefined variables, type mismatches, invalid conditions, division by zero, and invalid calls
 
+## How to run
+1. Run the server in the terminal:
+
+```bash
+py server.py
+```
+
+2. Open the local web link shown in the terminal:
+
+```text
+http://127.0.0.1:8000
+```
+
+3. Run the test suite from the project directory:
+
+```bash
+py -m unittest discover -s tests -v
+```
+
 ## Run
 From the project directory:
 
