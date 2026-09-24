@@ -1,3 +1,5 @@
+#This handles the semantics, variables, types, scope, control flow, and functions.
+
 from lexer import TokenType
 from parser import (
     NumberNode,
