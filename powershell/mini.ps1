@@ -6,6 +6,12 @@ param(
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $OneFileExe = Join-Path $Root "dist\mini.exe"
 $OneDirExe = Join-Path $Root "dist\mini\mini.exe"
+$Python = Get-Command python -ErrorAction SilentlyContinue
+
+if ($Python) {
+    & $Python.Source (Join-Path $Root "main.py") @MiniArgs
+    exit $LASTEXITCODE
+}
 
 if (Test-Path $OneFileExe) {
     & $OneFileExe @MiniArgs
@@ -17,5 +23,5 @@ if (Test-Path $OneDirExe) {
     exit $LASTEXITCODE
 }
 
-& python (Join-Path $Root "main.py") @MiniArgs
-exit $LASTEXITCODE
+Write-Error "Python was not found and no packaged Mini executable is available."
+exit 9009
