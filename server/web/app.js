@@ -1,15 +1,946 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const examples={hello:{category:'Beginner',title:'Hello, Mini!',desc:'Print your first greeting to the console.',code:'print("Hello, Mini Language!")'},variables:{category:'Beginner',title:'Variables',desc:'Store values and update them as your program runs.',code:'let x = 5\nlet name = "Jasmin"\nprint(x)\nprint(name)'},condition:{category:'Beginner',title:'If / Else',desc:'Branch logic based on a true or false condition.',code:'let x = 5\nif x > 3:\n    print("x is greater than 3")\nelse:\n    print("x is not greater than 3")\nend'},loop:{category:'Beginner',title:'While Loop',desc:'Repeat steps until a condition becomes false.',code:'let x = 5\nwhile x < 8:\n    print(x)\n    x = x + 1\nend'},compare:{category:'Beginner',title:'Comparison Check',desc:'Use comparison operators to decide what to print.',code:'let score = 88\nif score >= 90:\n    print("Pass with honors")\nelse:\n    print("Keep trying")\nend'},countdownBeginner:{category:'Beginner',title:'Countdown',desc:'Print numbers backward to explore loops in a simple way.',code:'let n = 5\nwhile n > 0:\n    print(n)\n    n = n - 1\nend\nprint("Blast off!")'},function:{category:'Intermediate',title:'Function',desc:'Define a reusable routine and call it with arguments.',code:'function add(a, b):\n    return a + b\nend\nlet result = add(5, 3)\nprint(result)'},calculator:{category:'Intermediate',title:'Calculator',desc:'Create a small calculator by combining functions and arithmetic.',code:'function multiply(a, b):\n    return a * b\nend\nlet total = multiply(6, 7)\nprint(total)'},first:{category:'Intermediate',title:'First-class Function',desc:'Assign a function to a variable and invoke it later.',code:'function add(a, b):\n    return a + b\nend\nlet operation = add\nprint(operation(2, 4))'},math:{category:'Intermediate',title:'Math Loop',desc:'Accumulate totals with a loop and numeric updates.',code:'let total = 0\nlet n = 10\nwhile n > 0:\n    total = total + n\n    n = n - 1\nend\nprint(total)'},logic:{category:'Intermediate',title:'Boolean Logic',desc:'Combine comparisons with logical operators to make decisions.',code:'let passed = true\nlet score = 85\nif score >= 90 && passed:\n    print("Excellent")\nelse:\n    print("Keep practicing")\nend'},strings:{category:'Intermediate',title:'Strings',desc:'Join text values and compare them for equality.',code:'let name = "Jasmin"\nlet greeting = "Hello, " + name + "!"\nprint(greeting)\nprint(greeting == "Hello, Jasmin!")'},recursion:{category:'Advanced',title:'Recursion',desc:'Compute a factorial using a recursive call stack.',code:'function factorial(n):\n    if n <= 1:\n        return 1\n    end\n    return n * factorial(n - 1)\nend\nprint(factorial(5))'},closure:{category:'Advanced',title:'Closure',desc:'A nested function captures and reuses values from its outer scope.',code:'let offset = 10\nfunction addOffset(value):\n    return value + offset\nend\nprint(addOffset(5))\noffset = 20\nprint(addOffset(5))'},countdown:{category:'Advanced',title:'Countdown',desc:'Use a recursive function to count backwards from a starting value.',code:'function countdown(n):\n    if n <= 0:\n        print("Blast off!")\n        return\n    end\n    print(n)\n    countdown(n - 1)\nend\ncountdown(5)'}};
-const starter=`# Mini Language - starter program\nlet x = 5\nlet name = "Jasmin"\nlet passed = true\n\nprint(x)\nprint(name)\nprint(passed)\n\nif x > 3:\n    print("x is greater than 3")\nelse:\n    print("x is not greater than 3")\nend\n\nwhile x < 8:\n    print(x)\n    x = x + 1\nend\n\nfunction add(a, b):\n    return a + b\nend\nlet result = add(5, 3)\nprint(result)`;
-function setCode(v){$('#editor').value=v;lines();pos()};function lines(){$('#numbers').textContent=Array.from({length:$('#editor').value.split('\n').length},(_,i)=>i+1).join('\n')}function pos(){const t=$('#editor').value.slice(0,$('#editor').selectionStart),line=t.split('\n').length,col=t.length-t.lastIndexOf('\n');$('#position').textContent=`Line ${line}, Col ${col}`};function out(v){$('#output').textContent=v}
-class MiniError extends Error{};class Lexer{constructor(s){this.s=s;this.i=0;this.tokens=[]}scan(){while(this.i<this.s.length){let c=this.s[this.i];if(/[ \t\r]/.test(c)){this.i++;continue}if(c==='\n'){this.tokens.push({t:'nl'});this.i++;continue}if(c==='#'){while(this.i<this.s.length&&this.s[this.i]!='\n')this.i++;continue}if(/[0-9]/.test(c)){let st=this.i;while(/[0-9]/.test(this.s[this.i]||''))this.i++;this.tokens.push({t:'num',v:Number(this.s.slice(st,this.i))});continue}if(/[A-Za-z_]/.test(c)){let st=this.i;while(/[A-Za-z0-9_]/.test(this.s[this.i]||''))this.i++;let v=this.s.slice(st,this.i);this.tokens.push({t:'id',v});continue}if(c==='"'){this.i++;let v='';while(this.i<this.s.length&&this.s[this.i]!=='"'){v+=this.s[this.i++]}if(this.s[this.i]!=='"')throw new MiniError('Unclosed string');this.i++;this.tokens.push({t:'str',v});continue}let two=this.s.slice(this.i,this.i+2);if(['==','!=','<=','>=','&&','||'].includes(two)){this.tokens.push({t:two});this.i+=2;continue}if('+-*/%(){}[],=:<>!'.includes(c)){this.tokens.push({t:c});this.i++;continue}throw new MiniError('IllegalCharacterError: '+c)}this.tokens.push({t:'eof'});return this.tokens}}
-class Parser{constructor(tokens){this.a=tokens;this.i=0}peek(t){const c=this.a[this.i];if(c.t===t)return true;if(c.t==='id'&&c.v===t)return true;if(t==='else:'&&c.t==='id'&&c.v==='else'&&this.a[this.i+1]?.t===':')return true;return false}take(t){if(t&&!this.peek(t))throw new MiniError('InvalidSyntaxError: expected '+t+', got '+this.a[this.i].t);const token=this.a[this.i++];if(t==='else:'&&token.t==='id'&&token.v==='else')this.take(':');return token}skip(){while(this.peek('nl'))this.i++}program(stop=[]){let b=[];this.skip();while(!this.peek('eof')&&!stop.some(x=>this.peek(x))){b.push(this.statement());this.skip()}return b}statement(){this.skip();if(this.peek('id')){let id=this.a[this.i].v;if(id==='let'){this.i++;let name=this.take('id').v;this.take('=');return{kind:'let',name,expr:this.expr()}}if(id==='print'){this.i++;this.take('(');let e=this.expr();this.take(')');return{kind:'print',expr:e}}if(id==='if'){this.i++;let test=this.expr();this.take(':');let yes=this.program(['else:','end']);let no=[];if(this.peek('else:')){this.take('else:');no=this.program(['end'])}this.take('end');return{kind:'if',test,yes,no}}if(id==='while'){this.i++;let test=this.expr();this.take(':');let body=this.program(['end']);this.take('end');return{kind:'while',test,body}}if(id==='function'){this.i++;let name=this.take('id').v;this.take('(');let params=[];if(!this.peek(')')){params.push(this.take('id').v);while(this.peek(',')){this.i++;params.push(this.take('id').v)}}this.take(')');this.take(':');let body=this.program(['end']);this.take('end');return{kind:'fn',name,params,body}}if(id==='return'){this.i++;return{kind:'return',expr:this.expr()}}let name=this.take('id').v;if(this.peek('=')){this.i++;return{kind:'set',name,expr:this.expr()}}let call={kind:'expr',expr:{kind:'var',name}};if(this.peek('(')){call.expr=this.call(call.expr)}return call}throw new MiniError('InvalidSyntaxError: unexpected token '+this.a[this.i].t)}expr(){return this.binary(0)}binary(min){let left=this.primary();const prec={'||':1,'&&':2,'==':3,'!=':3,'<':4,'>':4,'<=':4,'>=':4,'+':5,'-':5,'*':6,'/':6,'%':6};while(prec[this.a[this.i].t]>min){let op=this.a[this.i++].t;let right=this.binary(prec[op]);left={kind:'bin',op,left,right}}return left}primary(){let t=this.a[this.i++];if(t.t==='num'||t.t==='str')return{kind:'lit',v:t.v};if(t.t==='id'){if(t.v==='true'||t.v==='false')return{kind:'lit',v:t.v==='true'};let n={kind:'var',name:t.v};if(this.peek('('))n=this.call(n);return n}if(t.t==='('){let e=this.expr();this.take(')');return e}if(t.t==='!')return{kind:'un',op:'!',e:this.primary()};if(t.t==='-')return{kind:'un',op:'-',e:this.primary()};throw new MiniError('InvalidSyntaxError: invalid expression')}call(c){this.take('(');let args=[];if(!this.peek(')')){args.push(this.expr());while(this.peek(',')){this.i++;args.push(this.expr())}}this.take(')');return{kind:'call',callee:c,args}}}
-class Env{constructor(parent=null){this.v=Object.create(null);this.parent=parent}has(k){return k in this.v||!!this.parent&&this.parent.has(k)}get(k){if(k in this.v)return this.v[k];if(this.parent)return this.parent.get(k);throw new MiniError('UndefinedVariableError: '+k)}set(k,v){if(k in this.v)this.v[k]=v;else if(this.parent&&this.parent.has(k))this.parent.set(k,v);else this.v[k]=v}declare(k,v){this.v[k]=v}}
-class ReturnSignal{constructor(v){this.v=v}};class Fn{constructor(params,body,env){this.params=params;this.body=body;this.env=env}}
-function execute(code){const ast=new Parser(new Lexer(code).scan()).program();const env=new Env();const logs=[];const val=(n,e)=>{if(n.kind==='lit')return n.v;if(n.kind==='var')return e.get(n.name);if(n.kind==='un'){let v=val(n.e,e);if(n.op==='!'&&typeof v==='boolean')return !v;if(n.op==='-'&&typeof v==='number')return -v;throw new MiniError('TypeError: invalid unary operation')}if(n.kind==='bin'){let a=val(n.left,e),b=val(n.right,e);if(n.op==='+'&&typeof a===typeof b&&(typeof a==='number'||typeof a==='string'))return a+b;if(['-','*','/','%','<','>','<=','>='].includes(n.op)&&typeof a==='number'&&typeof b==='number'){if(n.op==='/'&&b===0)throw new MiniError('DivisionByZeroError');return {'-':a-b,'*':a*b,'/':a/b,'%':a%b,'<':a<b,'>':a>b,'<=':a<=b,'>=':a>=b}[n.op]}if(['==','!='].includes(n.op))return n.op==='=='?a===b:a!==b;if(n.op==='&&'&&typeof a==='boolean'&&typeof b==='boolean')return a&&b;if(n.op==='||'&&typeof a==='boolean'&&typeof b==='boolean')return a||b;throw new MiniError('TypeError: incompatible operands')}if(n.kind==='call'){let f=val(n.callee,e);if(!(f instanceof Fn))throw new MiniError('TypeError: value is not callable');if(f.params.length!==n.args.length)throw new MiniError('ArgumentError: incorrect number of arguments');let child=new Env(f.env);n.args.forEach((x,i)=>child.declare(f.params[i],val(x,e)));try{run(f.body,child)}catch(x){if(x instanceof ReturnSignal)return x.v;throw x}return null}};const run=(list,e)=>{for(const s of list){if(s.kind==='let')e.declare(s.name,val(s.expr,e));else if(s.kind==='set')e.set(s.name,val(s.expr,e));else if(s.kind==='print')logs.push(String(val(s.expr,e)));else if(s.kind==='expr')val(s.expr,e);else if(s.kind==='fn')e.declare(s.name,new Fn(s.params,s.body,e));else if(s.kind==='return')throw new ReturnSignal(val(s.expr,e));else if(s.kind==='if'){if(typeof val(s.test,e)!=='boolean')throw new MiniError('TypeError: condition must be boolean');run(val(s.test,e)?s.yes:s.no,new Env(e))}else if(s.kind==='while'){let guard=0;while(val(s.test,e)){if(++guard>10000)throw new MiniError('RuntimeError: loop limit exceeded');run(s.body,e)}}}};run(ast,env);return logs.join('\n')}
-function runProgram(){try{const r=execute($('#editor').value);out((r||'(No output)')+'\n\n> Execution finished.')}catch(e){out('Error: '+e.message)}}
-function show(page){$$('.page').forEach(x=>x.classList.toggle('active',x.id===page));$$('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));history.replaceState(null,'','#'+page)}$$('[data-page]').forEach(x=>x.onclick=()=>show(x.dataset.page));$('#run').onclick=runProgram;$('#reset').onclick=()=>{setCode(starter);out('Ready to run your program.')};$('#clear').onclick=()=>out('Output cleared.');$('#editor').oninput=()=>{lines();pos()};$('#editor').onkeyup=pos;$('#editor').onclick=pos;
-const select=$('#examplesSelect');Object.entries(examples).forEach(([k,v])=>select.add(new Option(`${v.title} (${v.category})`,k)));function preview(){const v=examples[select.value];$('#preview').textContent=v.code}select.onchange=preview;$('#load').onclick=()=>{setCode(examples[select.value].code);out('Example loaded. Click Run Program to execute it.');window.scrollTo({top:0,behavior:'smooth'})};
-const guides={basics:[['Variable declaration','let name = value'],['Variable update','name = value'],['Print','print(expression)'],['Comments','# comment']],control:[['If / else','if condition:\n    print("yes")\nelse:\n    print("no")\nend'],['While','while condition:\n    print(x)\n    x = x + 1\nend'],['Operators','+  -  *  /  %  ==  !=  <  >  <=  >=  &&  ||']],functions:[['Function','function add(a, b):\n    return a + b\nend'],['Call','let result = add(5, 3)'],['First-class function','let operation = add\nprint(operation(2, 4))']],ppl:[['Formal grammar & syntax','Recursive-descent parser builds an AST from grammar rules.'],['Lexical scoping','Nested Env objects resolve local and outer variables.'],['Type systems & semantics','Runtime checks reject incompatible operations.'],['Control flow','if/else and while control execution.'],['First-class functions','Functions are values and can be assigned/called.']]};function renderGuide(k='basics'){$('#guide').innerHTML=guides[k].map(x=>`<div class="guide-entry"><b>${x[0]}</b><pre>${x[1]}</pre></div>`).join('')}$$('[data-guide]').forEach(b=>b.onclick=()=>{$$('[data-guide]').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderGuide(b.dataset.guide)});
-const groupedExamples=Object.entries(examples).reduce((acc,[k,v])=>{(acc[v.category]??=[]).push([k,v]);return acc;},{});$('#exampleCards').innerHTML=Object.entries(groupedExamples).map(([category,items])=>`<div class="example-group"><h2><span>${category}</span><span class="example-count">${items.length}</span></h2>${items.map(([k,v])=>`<article class="example-card"><h3>${v.title}</h3><p>${v.desc}</p><button class="primary" data-load="${k}">Load Example</button></article>`).join('')}</div>`).join('');$$('[data-load]').forEach(b=>b.onclick=()=>{setCode(examples[b.dataset.load].code);show('playground');out('Example loaded. Click Run Program to execute it.')});
-$('#theme').onchange=()=>{document.documentElement.dataset.theme=$('#theme').value;localStorage.setItem('mini-theme',$('#theme').value)};$('#theme').value=localStorage.getItem('mini-theme')||'system';document.documentElement.dataset.theme=$('#theme').value;setCode(starter);preview();renderGuide();if(location.hash)show(location.hash.slice(1));
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const examples = {
+  hello: {
+    category: "Beginner",
+    title: "Hello, Mini!",
+    desc: "Print your first greeting to the console.",
+    code: 'print("Hello, Mini Language!")'
+  },
+  variables: {
+    category: "Beginner",
+    title: "Variables",
+    desc: "Store values and update them as your program runs.",
+    code: 'let x = 5\nlet name = "Jasmin"\nprint(x)\nprint(name)'
+  },
+  condition: {
+    category: "Beginner",
+    title: "If / Else",
+    desc: "Branch logic based on a true or false condition.",
+    code: 'let x = 5\nif x > 3:\n    print("x is greater than 3")\nelse:\n    print("x is not greater than 3")\nend'
+  },
+  loop: {
+    category: "Beginner",
+    title: "While Loop",
+    desc: "Repeat steps until a condition becomes false.",
+    code: 'let x = 5\nwhile x < 8:\n    print(x)\n    x = x + 1\nend'
+  },
+  compare: {
+    category: "Beginner",
+    title: "Comparison Check",
+    desc: "Use comparison operators to decide what to print.",
+    code: 'let score = 88\nif score >= 90:\n    print("Pass with honors")\nelse:\n    print("Keep trying")\nend'
+  },
+  countdownBeginner: {
+    category: "Beginner",
+    title: "Countdown",
+    desc: "Print numbers backward to explore loops in a simple way.",
+    code: 'let n = 5\nwhile n > 0:\n    print(n)\n    n = n - 1\nend\nprint("Blast off!")'
+  },
+  function: {
+    category: "Intermediate",
+    title: "Function",
+    desc: "Define a reusable routine and call it with arguments.",
+    code: 'function add(a, b):\n    return a + b\nend\nlet result = add(5, 3)\nprint(result)'
+  },
+  calculator: {
+    category: "Intermediate",
+    title: "Calculator",
+    desc: "Create a small calculator by combining functions and arithmetic.",
+    code: 'function multiply(a, b):\n    return a * b\nend\nlet total = multiply(6, 7)\nprint(total)'
+  },
+  first: {
+    category: "Intermediate",
+    title: "First-class Function",
+    desc: "Assign a function to a variable and invoke it later.",
+    code: 'function add(a, b):\n    return a + b\nend\nlet operation = add\nprint(operation(2, 4))'
+  },
+  math: {
+    category: "Intermediate",
+    title: "Math Loop",
+    desc: "Accumulate totals with a loop and numeric updates.",
+    code: 'let total = 0\nlet n = 10\nwhile n > 0:\n    total = total + n\n    n = n - 1\nend\nprint(total)'
+  },
+  logic: {
+    category: "Advanced",
+    title: "Logic Gates",
+    desc: "Use boolean logic to control flow with conditions.",
+    code: 'let a = true\nlet b = false\nif a && !b:\n    print("Condition is true")\nelse:\n    print("Condition is false")\nend'
+  },
+  recursion: {
+    category: "Advanced",
+    title: "Recursion",
+    desc: "Call a function from inside itself to solve a problem step by step.",
+    code: 'function fact(n):\n    if n == 0:\n        return 1\n    else:\n        return n * fact(n - 1)\n    end\nend\nprint(fact(5))'
+  }
+};
+
+const starter = `# Mini Language - starter program
+let x = 5
+let name = "Jasmin"
+let passed = true
+
+print(x)
+print(name)
+print(passed)
+
+if x > 3:
+    print("x is greater than 3")
+else:
+    print("x is not greater than 3")
+end
+
+while x < 8:
+    print(x)
+    x = x + 1
+end
+
+function add(a, b):
+    return a + b
+end
+let result = add(5, 3)
+print(result)`;
+
+function setCode(value) {
+  const editor = $("#editor");
+  editor.value = value;
+  updateLineNumbers();
+  updateCursorPosition();
+}
+
+function updateLineNumbers() {
+  const editor = $("#editor");
+  const count = editor.value.split("\n").length;
+  $("#numbers").textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
+}
+
+function updateCursorPosition() {
+  const editor = $("#editor");
+  const beforeCursor = editor.value.slice(0, editor.selectionStart);
+  const line = beforeCursor.split("\n").length;
+  const lastNewLine = beforeCursor.lastIndexOf("\n");
+  const col = lastNewLine === -1 ? beforeCursor.length + 1 : beforeCursor.length - lastNewLine;
+  $("#position").textContent = `Line ${line}, Col ${col}`;
+}
+
+function setOutput(value) {
+  $("#output").textContent = value;
+}
+
+function show(page) {
+  $$(".page").forEach((section) => {
+    section.classList.toggle("active", section.id === page);
+  });
+
+  $$('[data-page]').forEach((button) => {
+    const isActive = button.dataset.page === page;
+    button.classList.toggle("active", isActive);
+  });
+
+  location.hash = page;
+}
+
+const KEYWORDS = new Set([
+  "let",
+  "print",
+  "if",
+  "else",
+  "while",
+  "function",
+  "return",
+  "true",
+  "false",
+  "end"
+]);
+
+class MiniError extends Error {}
+
+class Lexer {
+  constructor(source) {
+    this.source = source;
+    this.index = 0;
+    this.tokens = [];
+  }
+
+  advance() {
+    this.index += 1;
+  }
+
+  peek(offset = 0) {
+    return this.source[this.index + offset] ?? "";
+  }
+
+  scan() {
+    while (this.index < this.source.length) {
+      const ch = this.peek();
+
+      if (/[\t\r ]/.test(ch)) {
+        this.advance();
+        continue;
+      }
+
+      if (ch === "\n") {
+        this.tokens.push({ type: "newline", value: "\n" });
+        this.advance();
+        continue;
+      }
+
+      if (ch === "#") {
+        while (this.index < this.source.length && this.peek() !== "\n") {
+          this.advance();
+        }
+        continue;
+      }
+
+      if (/[0-9]/.test(ch)) {
+        const start = this.index;
+        while (/[0-9]/.test(this.peek())) {
+          this.advance();
+        }
+
+        this.tokens.push({
+          type: "number",
+          value: Number(this.source.slice(start, this.index))
+        });
+        continue;
+      }
+
+      if (/[A-Za-z_]/.test(ch)) {
+        const start = this.index;
+        while (/[A-Za-z0-9_]/.test(this.peek())) {
+          this.advance();
+        }
+        const value = this.source.slice(start, this.index);
+        const type = KEYWORDS.has(value) ? "keyword" : "identifier";
+        this.tokens.push({ type, value });
+        continue;
+      }
+
+      if (ch === '"') {
+        this.advance();
+        let value = "";
+        while (this.index < this.source.length && this.peek() !== '"') {
+          value += this.peek();
+          this.advance();
+        }
+
+        if (this.peek() !== '"') {
+          throw new MiniError("Unclosed string literal.");
+        }
+
+        this.advance();
+        this.tokens.push({ type: "string", value });
+        continue;
+      }
+
+      const twoChar = this.source.slice(this.index, this.index + 2);
+      if (["==", "!=", "<=", ">=", "&&", "||"].includes(twoChar)) {
+        this.tokens.push({ type: "operator", value: twoChar });
+        this.index += 2;
+        continue;
+      }
+
+      if ("+-*/%(){}[],=:<>!".includes(ch)) {
+        this.tokens.push({ type: "symbol", value: ch });
+        this.advance();
+        continue;
+      }
+
+      throw new MiniError(`Illegal character: ${ch}`);
+    }
+
+    this.tokens.push({ type: "eof", value: null });
+    return this.tokens;
+  }
+}
+
+class Parser {
+  constructor(tokens) {
+    this.tokens = tokens;
+    this.index = 0;
+  }
+
+  current() {
+    return this.tokens[this.index];
+  }
+
+  peek(offset = 0) {
+    return this.tokens[this.index + offset] ?? { type: "eof", value: null };
+  }
+
+  advance() {
+    const token = this.current();
+    if (token.type !== "eof") {
+      this.index += 1;
+    }
+    return token;
+  }
+
+  skipNewlines() {
+    while (this.current().type === "newline") {
+      this.advance();
+    }
+  }
+
+  isStopToken(stopValues = []) {
+    const token = this.current();
+
+    if (token.type === "eof") {
+      return true;
+    }
+
+    if (token.type === "keyword" && stopValues.includes(token.value)) {
+      return true;
+    }
+
+    if (token.type === "symbol" && stopValues.includes(token.value)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  expect(type, value = null) {
+    const token = this.current();
+
+    if (token.type !== type) {
+      throw new MiniError(`Expected ${type}, got ${token.type}.`);
+    }
+
+    if (value !== null && token.value !== value) {
+      throw new MiniError(`Expected ${value}, got ${token.value}.`);
+    }
+
+    return this.advance();
+  }
+
+  match(type, value = null) {
+    const token = this.current();
+
+    if (token.type !== type) {
+      return false;
+    }
+
+    if (value !== null && token.value !== value) {
+      return false;
+    }
+
+    this.advance();
+    return true;
+  }
+
+  parseProgram(stopValues = []) {
+    const statements = [];
+    this.skipNewlines();
+
+    while (!this.isStopToken(stopValues)) {
+      const token = this.current();
+      if (token.type === "eof") {
+        break;
+      }
+
+      statements.push(this.parseStatement());
+      this.skipNewlines();
+    }
+
+    return statements;
+  }
+
+  parseStatement() {
+    this.skipNewlines();
+    const token = this.current();
+
+    if (token.type === "keyword") {
+      switch (token.value) {
+        case "let":
+          this.advance();
+          const name = this.expect("identifier").value;
+          this.expect("symbol", "=");
+          return { kind: "let", name, expression: this.parseExpression() };
+
+        case "print":
+          this.advance();
+          this.expect("symbol", "(");
+          const printExpr = this.parseExpression();
+          this.expect("symbol", ")");
+          return { kind: "print", expression: printExpr };
+
+        case "if":
+          this.advance();
+          const condition = this.parseExpression();
+          this.expect("symbol", ":");
+          const thenBlock = this.parseProgram(["else", "end"]);
+          let elseBlock = [];
+
+          if (this.current().type === "keyword" && this.current().value === "else") {
+            this.advance();
+            this.expect("symbol", ":");
+            elseBlock = this.parseProgram(["end"]);
+          }
+
+          this.expect("keyword", "end");
+          return { kind: "if", test: condition, yes: thenBlock, no: elseBlock };
+
+        case "while":
+          this.advance();
+          const whileTest = this.parseExpression();
+          this.expect("symbol", ":");
+          const loopBody = this.parseProgram(["end"]);
+          this.expect("keyword", "end");
+          return { kind: "while", test: whileTest, body: loopBody };
+
+        case "function":
+          this.advance();
+          const fnName = this.expect("identifier").value;
+          this.expect("symbol", "(");
+          const params = [];
+
+          if (!this.match("symbol", ")")) {
+            while (true) {
+              params.push(this.expect("identifier").value);
+              if (!this.match("symbol", ",")) {
+                break;
+              }
+            }
+            this.expect("symbol", ")");
+          }
+
+          this.expect("symbol", ":");
+          const fnBody = this.parseProgram(["end"]);
+          this.expect("keyword", "end");
+          return { kind: "function", name: fnName, params, body: fnBody };
+
+        case "return":
+          this.advance();
+          return { kind: "return", expression: this.parseExpression() };
+
+        case "end":
+          throw new MiniError("Unexpected end.");
+
+        default:
+          break;
+      }
+    }
+
+    if (token.type === "identifier") {
+      const name = this.advance().value;
+
+      if (this.match("symbol", "=")) {
+        return { kind: "set", name, expression: this.parseExpression() };
+      }
+
+      if (this.match("symbol", "(")) {
+        const args = [];
+        if (!this.match("symbol", ")")) {
+          while (true) {
+            args.push(this.parseExpression());
+            if (!this.match("symbol", ",")) {
+              break;
+            }
+          }
+          this.expect("symbol", ")");
+        }
+
+        return { kind: "call", callee: { kind: "variable", name }, args };
+      }
+
+      return { kind: "expr", expression: { kind: "variable", name } };
+    }
+
+    if (token.type === "symbol" && token.value === "(") {
+      return { kind: "expr", expression: this.parseExpression() };
+    }
+
+    return { kind: "expr", expression: this.parseExpression() };
+  }
+
+  parseExpression() {
+    return this.parseComparison();
+  }
+
+  parseComparison() {
+    let node = this.parseAdditive();
+
+    while (["==", "!=", "<", ">", "<=", ">="].includes(this.current().value)) {
+      const operator = this.advance().value;
+      const right = this.parseAdditive();
+      node = { kind: "binary", operator, left: node, right };
+    }
+
+    return node;
+  }
+
+  parseAdditive() {
+    let node = this.parseMultiplicative();
+
+    while (["+", "-"].includes(this.current().value)) {
+      const operator = this.advance().value;
+      const right = this.parseMultiplicative();
+      node = { kind: "binary", operator, left: node, right };
+    }
+
+    return node;
+  }
+
+  parseMultiplicative() {
+    let node = this.parseUnary();
+
+    while (["*", "/", "%"].includes(this.current().value)) {
+      const operator = this.advance().value;
+      const right = this.parseUnary();
+      node = { kind: "binary", operator, left: node, right };
+    }
+
+    return node;
+  }
+
+  parseUnary() {
+    if (this.current().type === "symbol" && ["+", "-", "!"].includes(this.current().value)) {
+      const operator = this.advance().value;
+      return { kind: "unary", operator, expression: this.parseUnary() };
+    }
+
+    return this.parsePrimary();
+  }
+
+  parsePrimary() {
+    const token = this.current();
+
+    if (token.type === "number") {
+      this.advance();
+      return { kind: "literal", value: token.value };
+    }
+
+    if (token.type === "string") {
+      this.advance();
+      return { kind: "literal", value: token.value };
+    }
+
+    if (token.type === "keyword" && (token.value === "true" || token.value === "false")) {
+      this.advance();
+      return { kind: "literal", value: token.value === "true" };
+    }
+
+    if (token.type === "identifier") {
+      const name = this.advance().value;
+      if (this.match("symbol", "(")) {
+        const args = [];
+        if (!this.match("symbol", ")")) {
+          while (true) {
+            args.push(this.parseExpression());
+            if (!this.match("symbol", ",")) {
+              break;
+            }
+          }
+          this.expect("symbol", ")");
+        }
+        return { kind: "call", callee: { kind: "variable", name }, args };
+      }
+      return { kind: "variable", name };
+    }
+
+    if (this.match("symbol", "(")) {
+      const expr = this.parseExpression();
+      this.expect("symbol", ")");
+      return expr;
+    }
+
+    throw new MiniError(`Unexpected token: ${token.type} ${token.value ?? ""}`);
+  }
+}
+
+class Environment {
+  constructor(parent = null) {
+    this.values = Object.create(null);
+    this.parent = parent;
+  }
+
+  has(name) {
+    return Object.prototype.hasOwnProperty.call(this.values, name) || (!!this.parent && this.parent.has(name));
+  }
+
+  get(name) {
+    if (Object.prototype.hasOwnProperty.call(this.values, name)) {
+      return this.values[name];
+    }
+
+    if (this.parent) {
+      return this.parent.get(name);
+    }
+
+    throw new MiniError(`Undefined variable: ${name}`);
+  }
+
+  set(name, value) {
+    if (Object.prototype.hasOwnProperty.call(this.values, name)) {
+      this.values[name] = value;
+      return;
+    }
+
+    if (this.parent && this.parent.has(name)) {
+      this.parent.set(name, value);
+      return;
+    }
+
+    this.values[name] = value;
+  }
+
+  declare(name, value) {
+    this.values[name] = value;
+  }
+}
+
+class FunctionValue {
+  constructor(parameters, body, environment) {
+    this.parameters = parameters;
+    this.body = body;
+    this.environment = environment;
+  }
+}
+
+class ReturnSignal extends Error {
+  constructor(value) {
+    super();
+    this.value = value;
+  }
+}
+
+function execute(code) {
+  const lexer = new Lexer(code);
+  const tokens = lexer.scan();
+  const parser = new Parser(tokens);
+  const ast = parser.parseProgram();
+  const env = new Environment();
+  const logs = [];
+
+  const evaluate = (node, scope) => {
+    if (!node) {
+      return null;
+    }
+
+    switch (node.kind) {
+      case "literal":
+        return node.value;
+
+      case "variable":
+        return scope.get(node.name);
+
+      case "unary": {
+        const value = evaluate(node.expression, scope);
+        if (node.operator === "-") {
+          if (typeof value !== "number") throw new MiniError("Unary minus requires a number.");
+          return -value;
+        }
+
+        if (node.operator === "!") {
+          if (typeof value !== "boolean") throw new MiniError("Logical not requires a boolean.");
+          return !value;
+        }
+
+        return value;
+      }
+
+      case "binary": {
+        const left = evaluate(node.left, scope);
+        const right = evaluate(node.right, scope);
+
+        if (node.operator === "+") {
+          if (typeof left === "number" && typeof right === "number") return left + right;
+          if (typeof left === "string" && typeof right === "string") return left + right;
+          throw new MiniError("Type error: '+' requires two numbers or two strings.");
+        }
+
+        if (["-", "*", "/", "%", "<", ">", "<=", ">="].includes(node.operator)) {
+          if (typeof left !== "number" || typeof right !== "number") {
+            throw new MiniError("Arithmetic and comparison operators require two numbers.");
+          }
+
+          if (node.operator === "-") return left - right;
+          if (node.operator === "*") return left * right;
+          if (node.operator === "/") {
+            if (right === 0) throw new MiniError("Division by zero.");
+            return left / right;
+          }
+          if (node.operator === "%") {
+            if (right === 0) throw new MiniError("Division by zero.");
+            return left % right;
+          }
+          if (node.operator === "<") return left < right;
+          if (node.operator === ">") return left > right;
+          if (node.operator === "<=") return left <= right;
+          if (node.operator === ">=") return left >= right;
+        }
+
+        if (node.operator === "==") return left === right;
+        if (node.operator === "!=") return left !== right;
+
+        if (node.operator === "&&") {
+          if (typeof left !== "boolean" || typeof right !== "boolean") {
+            throw new MiniError("Boolean AND requires two booleans.");
+          }
+          return left && right;
+        }
+
+        if (node.operator === "||") {
+          if (typeof left !== "boolean" || typeof right !== "boolean") {
+            throw new MiniError("Boolean OR requires two booleans.");
+          }
+          return left || right;
+        }
+
+        throw new MiniError(`Unsupported operator: ${node.operator}`);
+      }
+
+      case "call": {
+        const callee = evaluate(node.callee, scope);
+
+        if (!(callee instanceof FunctionValue)) {
+          throw new MiniError("Type error: value is not callable.");
+        }
+
+        if (callee.parameters.length !== node.args.length) {
+          throw new MiniError("Incorrect number of arguments.");
+        }
+
+        const localScope = new Environment(callee.environment);
+        node.args.forEach((arg, index) => {
+          localScope.declare(callee.parameters[index], evaluate(arg, scope));
+        });
+
+        try {
+          runStatements(callee.body, localScope);
+        } catch (error) {
+          if (error instanceof ReturnSignal) {
+            return error.value;
+          }
+          throw error;
+        }
+
+        return null;
+      }
+
+      default:
+        throw new MiniError(`Unknown node kind: ${node.kind}`);
+    }
+  };
+
+  const runStatements = (statements, scope) => {
+    for (const statement of statements) {
+      switch (statement.kind) {
+        case "let": {
+          scope.declare(statement.name, evaluate(statement.expression, scope));
+          break;
+        }
+
+        case "set": {
+          scope.set(statement.name, evaluate(statement.expression, scope));
+          break;
+        }
+
+        case "print": {
+          logs.push(String(evaluate(statement.expression, scope)));
+          break;
+        }
+
+        case "return": {
+          throw new ReturnSignal(evaluate(statement.expression, scope));
+        }
+
+        case "function": {
+          scope.declare(statement.name, new FunctionValue(statement.params, statement.body, scope));
+          break;
+        }
+
+        case "if": {
+          const condition = evaluate(statement.test, scope);
+          if (typeof condition !== "boolean") {
+            throw new MiniError("If conditions must evaluate to a boolean.");
+          }
+          runStatements(condition ? statement.yes : statement.no, new Environment(scope));
+          break;
+        }
+
+        case "while": {
+          while (true) {
+            const condition = evaluate(statement.test, scope);
+            if (typeof condition !== "boolean") {
+              throw new MiniError("While conditions must evaluate to a boolean.");
+            }
+            if (!condition) {
+              break;
+            }
+            runStatements(statement.body, new Environment(scope));
+          }
+          break;
+        }
+
+        case "expr": {
+          evaluate(statement.expression, scope);
+          break;
+        }
+
+        default:
+          throw new MiniError(`Unsupported statement: ${statement.kind}`);
+      }
+    }
+  };
+
+  runStatements(ast, env);
+  return logs.join("\n");
+}
+
+function runProgram() {
+  try {
+    const result = execute($("#editor").value);
+    const output = result ? `${result}\n\n> Execution finished.` : "(No output)\n\n> Execution finished.";
+    setOutput(output);
+  } catch (error) {
+    setOutput(`Error: ${error.message}`);
+  }
+}
+
+function renderGuide(category = "basics") {
+  const guides = {
+    basics: [
+      ["Variable declaration", "let name = value"],
+      ["Variable update", "name = value"],
+      ["Print", "print(expression)"],
+      ["Comments", "# comment"]
+    ],
+    control: [
+      ["If / else", "if condition:\n    print(\"yes\")\nelse:\n    print(\"no\")\nend"],
+      ["While", "while condition:\n    print(x)\n    x = x + 1\nend"],
+      ["Operators", "+  -  *  /  %  ==  !=  <  >  <=  >=  &&  ||"]
+    ],
+    functions: [
+      ["Function", "function add(a, b):\n    return a + b\nend"],
+      ["Call", "let result = add(5, 3)"],
+      ["First-class function", "let operation = add\nprint(operation(2, 4))"]
+    ],
+    ppl: [
+      ["Formal grammar", "Recursive-descent parser builds an AST from grammar rules."],
+      ["Lexical scoping", "Nested Environment objects resolve local and outer variables."],
+      ["Runtime checks", "Type mismatches and division by zero are rejected."],
+      ["Control flow", "if/else and while control execution."],
+      ["Functions", "Functions are values that can be assigned and called."]
+    ]
+  };
+
+  const guideElement = $("#guide");
+  guideElement.innerHTML = guides[category]
+    .map(([title, code]) => `
+      <div class="guide-entry">
+        <b>${title}</b>
+        <pre>${code}</pre>
+      </div>
+    `)
+    .join("");
+}
+
+function previewExample() {
+  const value = $("#examplesSelect").value;
+  $("#preview").textContent = examples[value].code;
+}
+
+function renderExampleCards() {
+  const grouped = Object.entries(examples).reduce((accumulator, [key, value]) => {
+    if (!accumulator[value.category]) {
+      accumulator[value.category] = [];
+    }
+    accumulator[value.category].push([key, value]);
+    return accumulator;
+  }, {});
+
+  $("#exampleCards").innerHTML = Object.entries(grouped)
+    .map(([category, items]) => `
+      <div class="example-group">
+        <h2>
+          <span>${category}</span>
+          <span class="example-count">${items.length}</span>
+        </h2>
+        ${items
+          .map(
+            ([key, item]) => `
+              <article class="example-card">
+                <h3>${item.title}</h3>
+                <p>${item.desc}</p>
+                <button class="primary" data-load="${key}">Load Example</button>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+    `)
+    .join("");
+
+  $$('[data-load]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const example = examples[button.dataset.load];
+      setCode(example.code);
+      show("playground");
+      setOutput("Example loaded. Click Run Program to execute it.");
+    });
+  });
+}
+
+const select = $("#examplesSelect");
+Object.entries(examples).forEach(([key, example]) => {
+  select.add(new Option(`${example.title} (${example.category})`, key));
+});
+
+select.addEventListener("change", previewExample);
+$("#load").addEventListener("click", () => {
+  const example = examples[select.value];
+  setCode(example.code);
+  setOutput("Example loaded. Click Run Program to execute it.");
+});
+
+$("#run").addEventListener("click", runProgram);
+$("#headerRun").addEventListener("click", runProgram);
+$("#reset").addEventListener("click", () => {
+  setCode(starter);
+  setOutput("Ready to run your program.");
+});
+$("#clear").addEventListener("click", () => setOutput("Output cleared."));
+
+$("#editor").addEventListener("input", () => {
+  updateLineNumbers();
+  updateCursorPosition();
+});
+$("#editor").addEventListener("keyup", updateCursorPosition);
+$("#editor").addEventListener("click", updateCursorPosition);
+
+$$('[data-page]').forEach((button) => {
+  button.addEventListener("click", () => show(button.dataset.page));
+});
+
+$$('[data-guide]').forEach((button) => {
+  button.addEventListener("click", () => {
+    $$('[data-guide]').forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+    renderGuide(button.dataset.guide);
+  });
+});
+
+const themeSelect = $("#theme");
+themeSelect.addEventListener("change", () => {
+  const theme = themeSelect.value;
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("mini-theme", theme);
+});
+
+themeSelect.value = localStorage.getItem("mini-theme") || "system";
+document.documentElement.dataset.theme = themeSelect.value;
+
+setCode(starter);
+previewExample();
+renderGuide();
+renderExampleCards();
+
+if (location.hash) {
+  const page = location.hash.slice(1);
+  if (page) {
+    show(page);
+  }
+}
