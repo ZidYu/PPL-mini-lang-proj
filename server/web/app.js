@@ -311,7 +311,10 @@ class Parser {
       "/": 6,
       "%": 6,
     };
-    while (prec[this.a[this.i].t] > min) {
+    while (
+      Object.hasOwn(prec, this.a[this.i].t) &&
+      prec[this.a[this.i].t] > min
+    ) {
       let op = this.a[this.i++].t;
       let right = this.binary(prec[op]);
       left = { kind: "bin", op, left, right };
