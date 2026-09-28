@@ -274,7 +274,10 @@ class Parser {
       }
       if (id === "return") {
         this.i++;
-        return { kind: "return", expr: this.expr() };
+        return {
+          kind: "return",
+          expr: this.peek("nl") || this.peek("end") ? null : this.expr(),
+        };
       }
       let name = this.take("id").v;
       if (this.peek("=")) {
@@ -458,7 +461,8 @@ function execute(code) {
       else if (s.kind === "print") logs.push(String(val(s.expr, e)));
       else if (s.kind === "expr") val(s.expr, e);
       else if (s.kind === "fn") e.declare(s.name, new Fn(s.params, s.body, e));
-      else if (s.kind === "return") throw new ReturnSignal(val(s.expr, e));
+      else if (s.kind === "return")
+        throw new ReturnSignal(s.expr ? val(s.expr, e) : null);
       else if (s.kind === "if") {
         if (typeof val(s.test, e) !== "boolean")
           throw new MiniError("TypeError: condition must be boolean");
