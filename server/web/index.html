@@ -5,25 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mini Programming Language and Interpreter</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="layout.css" />
 </head>
 <body>
 <header class="topbar">
   <a class="brand" href="#playground"><span class="logo">mini</span><span><b>Mini Language Interpreter</b><small>Write. Run. Learn.</small></span></a>
   <nav class="topnav"><button data-page="playground" class="active">Playground</button><button data-page="examples">Examples</button><button data-page="documentation">Documentation</button><button data-page="about">About</button></nav>
-  <div class="top-actions"><label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><button id="headerRun" class="primary">▶ Run</button></div>
+  <div class="top-actions"><label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div>
 </header>
 <main>
   <section id="playground" class="page active">
     <div class="layout">
-      <aside class="sidebar panel">
-        <button data-page="playground" class="active">⌂ <span>Playground</span></button><button data-page="examples">▤ <span>Examples</span></button><button data-page="documentation">▥ <span>Documentation</span></button><button data-page="about">ⓘ <span>About</span></button>
-        <div class="side-note"><i></i><h2>A simple language for bigger ideas.</h2><p>Practice programming concepts while exploring how interpreters work.</p></div>
-      </aside>
-      <div class="center">
-        <section class="panel editor-panel"><div class="panel-head"><div><em>PLAYGROUND</em><h1>Code Editor</h1><p>Write your Mini Language code here.</p></div><div class="actions"><button id="reset" class="secondary">↻ Reset</button><button id="run" class="primary">▶ Run Program</button></div></div><div class="editor"><pre id="numbers">1</pre><textarea id="editor" spellcheck="false" aria-label="Code editor"></textarea></div><div class="editor-foot"><span id="position">Line 1, Col 1</span><span>Mini Language</span></div></section>
-        <section class="panel"><div class="panel-head compact"><div><em>RESULT</em><h2>Output Console</h2></div><button id="clear" class="secondary">Clear</button></div><pre id="output" class="output">Ready to run your program.</pre></section>
-      </div>
       <aside class="right"><section class="panel"><div class="panel-head compact"><div><em>REFERENCE</em><h2>Language Guide</h2><p>Quick reference for supported syntax.</p></div></div><div class="tabs"><button data-guide="basics" class="active">Basics</button><button data-guide="control">Control Flow</button><button data-guide="functions">Functions</button><button data-guide="ppl">5 PPL Concepts</button></div><div id="guide"></div></section><section class="panel quick"><div class="panel-head compact"><div><em>STARTER CODE</em><h2>Quick Example</h2></div></div><select id="examplesSelect"></select><pre id="preview"></pre><button id="load" class="primary wide">Load Example</button></section></aside>
+      <div class="center">
+        <div class="panel workbench" id="workbench">
+          <section class="editor-pane"><div class="panel-head pane-heading"><div><em>PLAYGROUND</em><h2>Code Editor</h2></div></div><div class="pane-toolbar"><button id="reset" class="secondary">↻ Reset</button><button id="run" class="primary">▶ Run Program</button></div><div class="editor"><pre id="numbers">1</pre><textarea id="editor" spellcheck="false" aria-label="Code editor"></textarea></div><div class="editor-foot"><span id="position">Line 1, Col 1</span><span>Mini Language</span></div></section>
+          <div class="workbench-divider" id="workbenchDivider" role="separator" aria-label="Resize code editor and output console" aria-orientation="vertical" aria-valuemin="25" aria-valuemax="75" aria-valuenow="60" tabindex="0"></div>
+          <section class="output-pane"><div class="panel-head pane-heading"><div><em>RESULT</em><h2>Output Console</h2></div></div><div class="pane-toolbar output-toolbar"><button id="clear" class="secondary">Clear</button></div><pre id="output" class="output">Ready to run your program.</pre></section>
+        </div>
+      </div>
     </div>
   </section>
   <section id="examples" class="page"><div class="content panel"><em>LEARN BY DOING</em><h1>Examples</h1><p>Load a sample into the editor, then run it.</p><div id="exampleCards" class="cards"></div></div></section>
@@ -36,6 +36,7 @@ function    → "function" IDENTIFIER "(" parameters? ")" ":" statement* "end"</
 </main>
 <footer><span class="logo small">mini</span><span>Mini Language Interpreter · CSS125P - AM5</span><span>Code. Learn. Grow.</span></footer>
 <script src="app.js"></script>
+<script src="workbench.js"></script>
 <script src="documentation.js"></script>
 </body>
 </html>
